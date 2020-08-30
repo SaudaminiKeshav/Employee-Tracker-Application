@@ -33,20 +33,26 @@ function init() {
                 "View All Employees",
                 "View All Employees by Department",
                 "View All Employees by Manager",
+                "Add Employee",
                 "Exit"
             ]
         })
         .then(function (answer) {
             switch (answer.action) {
                 case "View All Employees":
-                    viewAllEmployees(connection, start);
+                    employee.viewAllEmployees(connection, init);
                     break;
 
                 case "View All Employees by Department":
-                    viewEmployeeDept(connection, start);
+                    employee.viewEmployeeDept(connection, init);
                     break;
 
                 case "View All Employees by Manager":
+                    employee.viewEmployeeMgr(connection, init);
+                        break;
+
+                case "Add Employee":
+                    employee.addEmployee(connection, init);
                         break;
 
                 case "Exit":
