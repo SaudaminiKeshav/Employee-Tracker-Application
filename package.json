@@ -1,0 +1,26 @@
+{
+  "name": "employee-tracker-application",
+  "version": "1.0.0",
+  "description": "MySQL command-line application that manages a company's employees",
+  "main": "index.js",
+  "dependencies": {
+    "inquirer": "^7.3.3",
+    "mysql": "^2.18.1",
+    "node": "^14.8.0",
+    "init": "^0.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaudaminiKeshav/Employee-Tracker-Application.git"
+  },
+  "author": "Saudamini Keshav",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SaudaminiKeshav/Employee-Tracker-Application/issues"
+  },
+  "homepage": "https://github.com/SaudaminiKeshav/Employee-Tracker-Application#readme"
+}
