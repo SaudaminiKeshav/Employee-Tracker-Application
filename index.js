@@ -1,6 +1,8 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 
+const employee = require('./employeeSearch.js');
+
 var connection = mysql.createConnection({
   host: "localhost",
 
@@ -30,18 +32,22 @@ function init() {
             choices: [
                 "View All Employees",
                 "View All Employees by Department",
+                "View All Employees by Manager",
                 "Exit"
             ]
         })
         .then(function (answer) {
             switch (answer.action) {
                 case "View All Employees":
-                    viewAllEmployees();
+                    viewAllEmployees(connection, start);
                     break;
 
                 case "View All Employees by Department":
-                    viewEmployeeDept();
+                    viewEmployeeDept(connection, start);
                     break;
+
+                case "View All Employees by Manager":
+                        break;
 
                 case "Exit":
                     connection.end();
@@ -49,11 +55,3 @@ function init() {
             }
         })
 }
-
-function viewAllEmployees() {
-    let query = "SELECT * FROM employee";
-    connection.query(query, function (err, res) {
-        if (err) throw err;
-        console.table(res);
-    });
-};
