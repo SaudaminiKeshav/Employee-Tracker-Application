@@ -1,26 +1,20 @@
 const mysql = require('mysql');
-const inquirer = require('inquirer');
 
 const employee = require('./employeeSearch.js');
+const inquirer = require('inquirer');
 
 var connection = mysql.createConnection({
-  host: "localhost",
-
-  // Your port; if not 3306
-  port: 3306,
-
-  // Your username
-  user: "root",
-
-  // Your password
-  password: "password",
-  database: "company_DB"
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "password",
+    database: "company_DB"
 });
 
-connection.connect(function(err) {
-  if (err) throw err;
-  console.log("connected as id " + connection.threadId);
-  init();
+connection.connect(function (err) {
+    if (err) throw err;
+    console.log("connected as id " + connection.threadId);
+    init();
 });
 
 function init() {
@@ -40,20 +34,20 @@ function init() {
         .then(function (answer) {
             switch (answer.action) {
                 case "View All Employees":
-                    employee.viewAllEmployees(connection, init);
+                    viewAllEmployees();
                     break;
 
                 case "View All Employees by Department":
-                    employee.viewEmployeeDept(connection, init);
+                    viewEmployeeDept();
                     break;
 
                 case "View All Employees by Manager":
-                    employee.viewEmployeeMgr(connection, init);
-                        break;
+                    viewEmployeeMgr();
+                    break;
 
                 case "Add Employee":
-                    employee.addEmployee(connection, init);
-                        break;
+                    addEmployee();
+                    break;
 
                 case "Exit":
                     connection.end();
@@ -61,3 +55,165 @@ function init() {
             }
         })
 }
+
+function viewAllEmployees() {
+    let query = "SELECT * FROM employee";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        init()
+    });
+};
+
+function viewEmployeeDept() {
+    // Query the database for all available departments to prompt user
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "department",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "What department would you like to search by?"
+                }
+            ])
+            .then(function (answer) {
+                console.log(answer.department);
+                let query = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee as emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE department.name = ? ORDER BY employee.id'
+                connection.query(query, answer.department, function (err, res) {
+                    if (err) throw err;
+                    console.table(res);
+                    init()
+                });
+            });
+    });
+};
+
+function viewEmployeeMgr() {
+
+    connection.query("SELECT DISTINCT emp.first_name, emp.last_name FROM employee LEFT JOIN employee AS emp ON employee.manager_id = emp.id WHERE emp.first_name IS NOT NULL", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "manager",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].first_name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which manager would you like to search by?"
+                }
+            ])
+            .then(function (answer) {
+                console.log(answer.manager);
+                let query = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee AS emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE emp.first_name = ? ORDER BY employee.id;'
+                connection.query(query, answer.manager, function (err, res) {
+                    if (err) throw err;
+                    console.table(res);
+                    init()
+                });
+            });
+    });
+};
+
+function addEmployee() {
+    let newEmployee = {};
+    connection.query("SELECT * FROM role", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "first_name",
+                    type: "input",
+                    message: "What is the employee's first name?",
+                    validate: function (answer) {
+                        if (answer.length == 0) {
+                            return console.log("A valid first name is required.");
+                        }
+                        return true;
+                    }
+                },
+                {
+                    name: "last_name",
+                    type: "input",
+                    message: "What is the employee's last name?",
+                    validate: function (answer) {
+                        if (answer.length == 0) {
+                            return console.log("A valid last name is required.");
+                        }
+                        return true;
+                    }
+                },
+                {
+                    name: "role",
+                    type: "list",
+                    choices: ["Assistant to the Regional Manager",
+                        "Regional Manager",
+                        "Accountant",
+                        "HR Associate",
+                        "Software Engineer",
+                        "Administrative Professional",
+                        "Manager",
+                        "Quality Control Associate",
+                        "Sales Representative"
+                    ],
+                    message: "What is the employee's role?"
+                }
+            ])
+            .then(function (answer) {
+
+                newEmployee.first_name = answer.first_name;
+                newEmployee.last_name = answer.last_name;
+
+                connection.query("SELECT * FROM role WHERE title = ?", answer.role, function (err, results) {
+                    if (err) throw err;
+
+                    newEmployee.role_id = results[0].id;
+
+                    connection.query("SELECT * FROM employee;", answer.role, function (err, results) {
+                        if (err) throw err;
+                        inquirer
+                            .prompt([
+                                {
+                                    name: "manager_name",
+                                    type: "list",
+                                    choices: function () {
+                                        let choiceArray = [];
+                                        for (var i = 0; i < results.length; i++) {
+                                            choiceArray.push(results[i].first_name);
+                                        }
+                                        return choiceArray;
+                                    },
+                                    message: "Who is the employee's manager?"
+                                }
+                            ])
+                            .then(function (answer) {
+
+                                connection.query("SELECT id FROM employee WHERE first_name = ?", answer.manager_name, function (err, results) {
+                                    if (err) throw err;
+                                    newEmployee.manager_id = results[0].id;
+                                    console.log("Adding new employee: ", newEmployee);
+
+                                    connection.query('INSERT INTO employee SET ?', newEmployee, function (err, results) {
+                                        if (err) throw err;
+                                        console.log("Employee successfully added.");
+                                        init()
+                                    })
+                                })
+                            });
+                    });
+                });
+            });
+    })
+};

@@ -30,10 +30,10 @@ SELECT * FROM role;
 -- Create managers who do not have a manager so that employees with managers have correct manager_id
 INSERT INTO employee (first_name, last_name, role_id)
 VALUES 
-("Michael", "Scott", 2),
-("Angela", "Martin", 3),
-("Darryl", "Philbin", 5),
-("Connie", "Tran", 4);
+("Brad", "Smith", 2),
+("Angelina", "Jolea", 3),
+("Daryl", "Philbin", 5),
+("Tracy", "Tran", 4);
 
 -- Create employees with manager
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
