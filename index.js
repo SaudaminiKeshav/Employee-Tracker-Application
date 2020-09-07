@@ -35,6 +35,7 @@ function init() {
                 "Delete Department",
                 "Add/Update Employee Role",
                 "Update Manager",
+                "View total utilized budget of a department",
                 "Exit"
             ]
         })
@@ -82,6 +83,10 @@ function init() {
 
                 case "Update Manager":
                     updateManager();
+                    break;
+
+                case "View total utilized budget of a department":
+                    totalUtilizedBudget();
                     break;
 
                 case "Exit":
@@ -168,7 +173,7 @@ function viewEmployeeMgr() {
             ])
             .then(function (answer) {
                 console.log(answer.manager);
-                let query = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee AS emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE emp.first_name = ? ORDER BY employee.id;'
+                let query = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee AS emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE emp.first_name = ? ORDER BY employee.id'
                 connection.query(query, answer.manager, function (err, res) {
                     if (err) throw err;
                     console.table(res);
@@ -471,3 +476,39 @@ function deleteDepartment() {
             });
     });
 }
+
+function totalUtilizedBudget(){
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "department",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which department's Total Utilized Budget would you like to view?"
+                }
+            ])
+            .then(function (answer) {
+                let query = 'SELECT DISTINCT role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee as emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE department.name = ? ORDER BY employee.id'
+                connection.query(query, answer.department, function (err, res) {
+                    if (err) throw err;
+                    console.log("\n\n\nBelow are the employees in "+ answer.department+" department\n");
+                    console.table(res);
+                    let result = 0;
+                    res.forEach(element => {
+                        result += element.salary
+                    });
+                    console.log("\nThe total utilized budget of this department is "+ result+"\n\n");
+                    init()
+                });
+            });
+    });
+}
+
