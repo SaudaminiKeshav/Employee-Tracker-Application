@@ -29,6 +29,7 @@ function init() {
                 "View All Employees by Manager",
                 "Add Employee",
                 "Delete Employee",
+                "Update Employee Role",
                 "Exit"
             ]
         })
@@ -52,6 +53,10 @@ function init() {
 
                 case "Delete Employee":
                     deleteEmployee();
+                    break;
+
+                case "Update Employee Role":
+                    updateEmployee();
                     break;
 
                 case "Exit":
@@ -212,7 +217,7 @@ function addEmployee() {
 
                                     connection.query('INSERT INTO employee SET ?', newEmployee, function (err, results) {
                                         if (err) throw err;
-                                        console.log("Employee successfully added.");
+                                        console.log("Employee successfully added.\n\n\n");
                                         init()
                                     })
                                 })
@@ -245,9 +250,69 @@ function deleteEmployee() {
                 let query = 'DELETE FROM employee WHERE first_name = ?;'
                 connection.query(query, answer.removeEmployee, function (err, res) {
                     if (err) throw err;
-                    console.log("Employee successfully deleted");
+                    console.log("Employee successfully deleted \n\n\n");
                     init()
                 });
             });
     });
+}
+
+function updateEmployee(){
+    let newRole = {};
+
+    connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name FROM employee LEFT JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id ORDER BY employee.id", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "updateEmployee",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].first_name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which employee would you like to update?"
+                }
+            ])
+            .then(function (answer) {
+
+                newRole.first_name = answer.updateEmployee;
+
+                connection.query("SELECT * FROM role", function (err, res) {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                name: "updateRole",
+                                type: "list",
+                                choices: function () {
+                                    let choiceArray = [];
+                                    for (var i = 0; i < results.length; i++) {
+                                        choiceArray.push(results[i].title);
+                                    }
+                                    return choiceArray;
+                                },
+                                message: "What would you like you to change their role title to?"
+                            }
+                        ])
+                        .then(function (answer) {
+                            // Translate role to role_id
+                            connection.query("SELECT * FROM role WHERE title = ?", answer.updateRole, function (err, results) {
+                                if (err) throw err;
+
+                                newRole.role_id = results[0].id;
+
+                                connection.query("UPDATE employee SET role_id = ? WHERE first_name = ?", [newRole.role_id, newRole.first_name], function (err, res) {
+                                    if (err) throw (err);
+                                    console.log('Employee role successfully updated.\n\n\n');
+                                    init();
+                                })
+                            })
+                        });
+                });
+            });
+    })
 }
