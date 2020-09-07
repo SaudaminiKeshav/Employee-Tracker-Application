@@ -28,8 +28,9 @@ function init() {
                 "View All Employees by Department",
                 "View All Employees by Manager",
                 "Add Employee",
-                "Add Department",
                 "Delete Employee",
+                "Add Department",
+                "Delete Department",
                 "Update Employee Role",
                 "Update Manager",
                 "Exit"
@@ -55,6 +56,10 @@ function init() {
 
                 case "Add Department":
                     addDepartment();
+                    break;
+
+                case "Delete Department":
+                    deleteDepartment();
                     break;
 
                 case "Delete Employee":
@@ -386,28 +391,57 @@ function updateManager() {
     })
 }
 
-function addDepartment(){
+function addDepartment() {
     inquirer
-    .prompt([
-        {
-            name: "dept_name",
-            type: "input",
-            default: "Marketing",
-            message: "What is the name of the department you want to add?",
-            validate: function (answer) {
-                if (answer.length == 0) {
-                    return console.log("A valid department name is required.");
+        .prompt([
+            {
+                name: "dept_name",
+                type: "input",
+                default: "Marketing",
+                message: "What is the name of the department you want to add?",
+                validate: function (answer) {
+                    if (answer.length == 0) {
+                        return console.log("A valid department name is required.");
+                    }
+                    return true;
                 }
-                return true;
             }
-        }
-    ])
-    .then(function (answer) {
+        ])
+        .then(function (answer) {
             connection.query('INSERT INTO department (name) VALUES (?)', answer.dept_name, function (err, results) {
                 if (err) throw err;
                 console.log("Department successfully added.\n\n\n");
                 init();
             });
 
-    })
+        })
+}
+
+function deleteDepartment(){
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "removeDept",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which department would you like to remove?"
+                }
+            ])
+            .then(function (answer) {
+                let query = 'DELETE FROM department WHERE name = ?;'
+                connection.query(query, answer.removeDept, function (err, res) {
+                    if (err) throw err;
+                    console.log("Department successfully deleted");
+                    init();
+                });
+            });
+    });
 }
