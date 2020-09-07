@@ -28,6 +28,7 @@ function init() {
                 "View All Employees by Department",
                 "View All Employees by Manager",
                 "Add Employee",
+                "Add Department",
                 "Delete Employee",
                 "Update Employee Role",
                 "Update Manager",
@@ -50,6 +51,10 @@ function init() {
 
                 case "Add Employee":
                     addEmployee();
+                    break;
+
+                case "Add Department":
+                    addDepartment();
                     break;
 
                 case "Delete Employee":
@@ -322,7 +327,7 @@ function updateEmployee() {
     })
 }
 
-function updateManager(){
+function updateManager() {
     let newManager = {};
 
     connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee AS emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id ORDER BY employee.id", function (err, results) {
@@ -378,5 +383,31 @@ function updateManager(){
                         });
                 });
             });
+    })
+}
+
+function addDepartment(){
+    inquirer
+    .prompt([
+        {
+            name: "dept_name",
+            type: "input",
+            default: "Marketing",
+            message: "What is the name of the department you want to add?",
+            validate: function (answer) {
+                if (answer.length == 0) {
+                    return console.log("A valid department name is required.");
+                }
+                return true;
+            }
+        }
+    ])
+    .then(function (answer) {
+            connection.query('INSERT INTO department (name) VALUES (?)', answer.dept_name, function (err, results) {
+                if (err) throw err;
+                console.log("Department successfully added.\n\n\n");
+                init();
+            });
+
     })
 }
