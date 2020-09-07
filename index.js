@@ -25,6 +25,7 @@ function init() {
             message: "What would you like to do?",
             choices: [
                 "View All Employees",
+                "View Departments",
                 "View All Employees by Department",
                 "View All Employees by Manager",
                 "Add Employee",
@@ -40,6 +41,10 @@ function init() {
             switch (answer.action) {
                 case "View All Employees":
                     viewAllEmployees();
+                    break;
+
+                case  "View Departments":
+                    viewDepartments();
                     break;
 
                 case "View All Employees by Department":
@@ -88,6 +93,14 @@ function viewAllEmployees() {
         console.table(res);
         init()
     });
+};
+
+function viewDepartments() {
+    let query = "SELECT * FROM department";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+    })
 };
 
 function viewEmployeeDept() {
@@ -417,7 +430,7 @@ function addDepartment() {
         })
 }
 
-function deleteDepartment(){
+function deleteDepartment() {
     connection.query("SELECT * FROM department", function (err, results) {
         if (err) throw err;
         inquirer
