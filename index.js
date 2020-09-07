@@ -26,13 +26,14 @@ function init() {
             choices: [
                 "View All Employees",
                 "View Departments",
+                "View Roles",
                 "View All Employees by Department",
                 "View All Employees by Manager",
                 "Add Employee",
                 "Delete Employee",
                 "Add Department",
                 "Delete Department",
-                "Update Employee Role",
+                "Add/Update Employee Role",
                 "Update Manager",
                 "Exit"
             ]
@@ -43,8 +44,12 @@ function init() {
                     viewAllEmployees();
                     break;
 
-                case  "View Departments":
+                case "View Departments":
                     viewDepartments();
+                    break;
+
+                case "View Roles":
+                    viewRoles();
                     break;
 
                 case "View All Employees by Department":
@@ -71,7 +76,7 @@ function init() {
                     deleteEmployee();
                     break;
 
-                case "Update Employee Role":
+                case "Add/Update Employee Role":
                     updateEmployee();
                     break;
 
@@ -97,6 +102,14 @@ function viewAllEmployees() {
 
 function viewDepartments() {
     let query = "SELECT * FROM department";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+    })
+};
+
+function viewRoles() {
+    let query = "SELECT * FROM role";
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
