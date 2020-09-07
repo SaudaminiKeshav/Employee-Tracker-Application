@@ -18,6 +18,10 @@ connection.connect(function (err) {
 });
 
 function init() {
+    console.log("\n\n\n-----------------------------\n"+
+    "EMPLOYEE TRACKER APPLICATION\n"+
+    "-----------------------------\n"
+    );
     inquirer
         .prompt({
             name: "action",
@@ -101,7 +105,7 @@ function viewAllEmployees() {
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
-        init()
+        init();
     });
 };
 
@@ -110,6 +114,7 @@ function viewDepartments() {
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
+        init();
     })
 };
 
@@ -118,6 +123,7 @@ function viewRoles() {
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
+        init();
     })
 };
 
@@ -146,7 +152,7 @@ function viewEmployeeDept() {
                 connection.query(query, answer.department, function (err, res) {
                     if (err) throw err;
                     console.table(res);
-                    init()
+                    init();
                 });
             });
     });
@@ -177,7 +183,7 @@ function viewEmployeeMgr() {
                 connection.query(query, answer.manager, function (err, res) {
                     if (err) throw err;
                     console.table(res);
-                    init()
+                    init();
                 });
             });
     });
@@ -264,7 +270,7 @@ function addEmployee() {
                                     connection.query('INSERT INTO employee SET ?', newEmployee, function (err, results) {
                                         if (err) throw err;
                                         console.log("Employee successfully added.\n\n\n");
-                                        init()
+                                        init();
                                     })
                                 })
                             });
@@ -297,7 +303,7 @@ function deleteEmployee() {
                 connection.query(query, answer.removeEmployee, function (err, res) {
                     if (err) throw err;
                     console.log("Employee successfully deleted \n\n\n");
-                    init()
+                    init();
                 });
             });
     });
@@ -413,6 +419,7 @@ function updateManager() {
                                 connection.query("UPDATE employee SET manager_id = ? WHERE first_name = ?", [newManager.manager_id, newManager.first_name], function (err, res) {
                                     if (err) throw (err);
                                     console.log('Employee manager successfully updated.');
+                                    init();
                                 })
 
                             })
@@ -506,7 +513,7 @@ function totalUtilizedBudget(){
                         result += element.salary
                     });
                     console.log("\nThe total utilized budget of this department is "+ result+"\n\n");
-                    init()
+                    init();
                 });
             });
     });
