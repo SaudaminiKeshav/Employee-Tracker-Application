@@ -28,6 +28,7 @@ function init() {
                 "View All Employees by Department",
                 "View All Employees by Manager",
                 "Add Employee",
+                "Delete Employee",
                 "Exit"
             ]
         })
@@ -47,6 +48,10 @@ function init() {
 
                 case "Add Employee":
                     addEmployee();
+                    break;
+
+                case "Delete Employee":
+                    deleteEmployee();
                     break;
 
                 case "Exit":
@@ -217,3 +222,32 @@ function addEmployee() {
             });
     })
 };
+
+function deleteEmployee() {
+    connection.query("SELECT * FROM employee WHERE manager_id IS NOT NULL", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "removeEmployee",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].first_name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which employee would you like to remove?"
+                }
+            ])
+            .then(function (answer) {
+                let query = 'DELETE FROM employee WHERE first_name = ?;'
+                connection.query(query, answer.removeEmployee, function (err, res) {
+                    if (err) throw err;
+                    console.log("Employee successfully deleted");
+                    init()
+                });
+            });
+    });
+}
