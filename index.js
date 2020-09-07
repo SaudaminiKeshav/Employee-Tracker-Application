@@ -30,6 +30,7 @@ function init() {
                 "Add Employee",
                 "Delete Employee",
                 "Update Employee Role",
+                "Update Manager",
                 "Exit"
             ]
         })
@@ -57,6 +58,10 @@ function init() {
 
                 case "Update Employee Role":
                     updateEmployee();
+                    break;
+
+                case "Update Manager":
+                    updateManager();
                     break;
 
                 case "Exit":
@@ -257,7 +262,7 @@ function deleteEmployee() {
     });
 }
 
-function updateEmployee(){
+function updateEmployee() {
     let newRole = {};
 
     connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name FROM employee LEFT JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id ORDER BY employee.id", function (err, results) {
@@ -310,6 +315,65 @@ function updateEmployee(){
                                     console.log('Employee role successfully updated.\n\n\n');
                                     init();
                                 })
+                            })
+                        });
+                });
+            });
+    })
+}
+
+function updateManager(){
+    let newManager = {};
+
+    connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, emp.first_name AS manager FROM employee LEFT JOIN employee AS emp ON emp.id = employee.manager_id JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id ORDER BY employee.id", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "updateEmployee",
+                    type: "list",
+                    choices: function () {
+                        let choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].first_name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which employee would you like to update?"
+                }
+            ])
+            .then(function (answer) {
+
+                newManager.first_name = answer.updateEmployee;
+
+                connection.query("SELECT * FROM employee", function (err, res) {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                name: "updateManager",
+                                type: "list",
+                                choices: function () {
+                                    let choiceArray = [];
+                                    for (var i = 0; i < results.length; i++) {
+                                        choiceArray.push(results[i].first_name);
+                                    }
+                                    return choiceArray;
+                                },
+                                message: "Who would you like to change their manager to?"
+                            }
+                        ])
+                        .then(function (answer) {
+                            connection.query("SELECT * FROM employee WHERE first_name = ?", answer.updateManager, function (err, results) {
+                                if (err) throw err;
+
+                                newManager.manager_id = results[0].id;
+
+                                connection.query("UPDATE employee SET manager_id = ? WHERE first_name = ?", [newManager.manager_id, newManager.first_name], function (err, res) {
+                                    if (err) throw (err);
+                                    console.log('Employee manager successfully updated.');
+                                })
+
                             })
                         });
                 });
