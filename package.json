@@ -4,6 +4,7 @@
   "description": "MySQL command-line application that manages a company's employees",
   "main": "index.js",
   "dependencies": {
+    "heroku": "^7.42.13",
     "init": "^0.1.2",
     "inquirer": "^7.3.3",
     "mysql": "^2.18.1",
